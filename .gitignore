@@ -1,0 +1,36 @@
+# Private, never published
+docs/internal/
+.claude/settings.local.json
+.agents/
+.tmp/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+coverage/
+
+# Local data dumps
+*.dump
+/data/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
