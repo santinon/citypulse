@@ -21,11 +21,12 @@ Out of scope for the MVP: demand forecasting, user accounts and payments.
 
 ## Roadmap
 
-Work is tracked in [GitHub issues](../../issues) and [milestones](../../milestones).
+Work is tracked in [GitHub issues](https://github.com/santinon/citypulse/issues) and
+[milestones](https://github.com/santinon/citypulse/milestones).
 
 ## Data sources and attribution
 
-Contains data from BIXI Montréal, published under the
+This project uses data from BIXI Montréal, published under the
 [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/) licence:
 
 - GBFS discovery feed: https://gbfs.velobixi.com/gbfs/gbfs.json
