@@ -77,8 +77,18 @@ Rules:
 
 ## Commands
 
-No build tooling exists yet. This section lists only commands that actually work.
-It will be completed by issue #3 (backend) and issue #8 (frontend).
+This section lists only commands that actually work. Build and test commands will be
+added by issue #3 (backend) and issue #8 (frontend).
+
+One-time setup after cloning (enables the git hooks in `.githooks/`):
+
+```sh
+git config core.hooksPath .githooks
+```
+
+The hooks refuse to commit or push private files (internal notes, the local agent log,
+scratch files, machine-local agent settings, `.env` files) and AI attribution trailers in
+commit messages. The rules live in `.githooks/guards.sh`.
 
 ## Data contract (non-negotiable)
 

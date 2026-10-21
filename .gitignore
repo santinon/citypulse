@@ -1,6 +1,7 @@
 # Private, never published
 docs/internal/
 .claude/settings.local.json
+.claude/hooks/
 .agents/
 .tmp/
 

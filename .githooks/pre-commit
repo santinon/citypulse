@@ -1,0 +1,15 @@
+#!/bin/sh
+# Refuse to commit private files (see .githooks/guards.sh).
+. "$(git rev-parse --show-toplevel)/.githooks/guards.sh"
+
+# -z keeps git from quoting non-ASCII names; --diff-filter=d lets a private file
+# be removed from tracking while still refusing to add or modify one.
+found=$(git diff --cached --name-only -z --diff-filter=d | tr '\0' '\n' | private_paths)
+if [ -n "$found" ]; then
+    echo "pre-commit: refusing to commit private files:" >&2
+    printf '%s\n' "$found" | sed 's/^/    /' >&2
+    echo "  Unstage them with: git restore --staged <file>" >&2
+    echo "  Rules: .githooks/guards.sh" >&2
+    exit 1
+fi
+exit 0

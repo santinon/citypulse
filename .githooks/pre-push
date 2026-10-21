@@ -1,0 +1,39 @@
+#!/bin/sh
+# Second barrier: re-check every commit about to be pushed for private files and
+# AI attribution trailers. Catches commits made with `git commit --no-verify`.
+# Git feeds one line per ref on stdin: <local ref> <local sha> <remote ref> <remote sha>
+. "$(git rev-parse --show-toplevel)/.githooks/guards.sh"
+
+zero=0000000000000000000000000000000000000000
+problems=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ -z "$local_sha" ] && continue
+    [ "$local_sha" = "$zero" ] && continue    # deleting a remote ref: nothing is sent
+    if [ "$remote_sha" = "$zero" ] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+        range="$local_sha --not --remotes"    # new branch or unknown remote tip
+    else
+        range="$remote_sha..$local_sha"
+    fi
+    # Fail closed: if the commits cannot be listed, nothing is pushed.
+    # shellcheck disable=SC2086
+    names=$(git log -m --format= --name-only -z --diff-filter=d $range) || {
+        echo "pre-push: could not list the commits being pushed ($range); refusing." >&2
+        exit 1
+    }
+    files=$(printf '%s' "$names" | tr '\0' '\n' | sort -u | private_paths)
+    # shellcheck disable=SC2086
+    trailers=$(git log --format=%B $range | ai_trailers)
+    [ -n "$files" ] && problems="$problems
+  private files:
+$(printf '%s\n' "$files" | sed 's/^/    /')"
+    [ -n "$trailers" ] && problems="$problems
+  AI attribution in commit messages:
+$(printf '%s\n' "$trailers" | sed 's/^/    /')"
+done
+
+if [ -n "$problems" ]; then
+    echo "pre-push: refusing to push; nothing was sent.$problems" >&2
+    echo "  Rewrite the unpushed commits without them. Rules: .githooks/guards.sh" >&2
+    exit 1
+fi
+exit 0
