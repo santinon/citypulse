@@ -7,6 +7,12 @@
 - Node.js 24 LTS and npm
 - Docker Desktop (or Docker Engine) with Compose v2
 
+After cloning, enable the repository's git hooks once:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ## How work flows
 
 1. Pick an open issue, assign yourself, and read its acceptance criteria.
