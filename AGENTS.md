@@ -65,8 +65,10 @@ unless a blocker is found.
    (example: `4-gbfs-client`).
 3. The owner implements and runs the full validation gate locally (see Commands).
 4. Open a pull request that closes the issue and fill in the PR template.
-5. The other agent reviews the diff read-only and comments on the pull request.
-   One review pass and one fix pass, unless a severe defect is found.
+5. The other agent reviews the diff read-only. Findings and their triage are recorded
+   locally in `.agents/reviews/` (gitignored), not posted on the pull request; the owner
+   fixes the justified findings before merge. One review pass and one fix pass, unless a
+   severe defect is found.
 6. CI green, then a human approves and merges (squash merge).
 
 Rules:
