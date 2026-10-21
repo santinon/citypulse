@@ -29,10 +29,15 @@ Scope, priorities and acceptance criteria live in the GitHub issues and mileston
 
 ### Roles
 
-- **Claude Code** is the default implementer and lead designer.
+- **Claude Code** leads: it plans, assigns tasks, arbitrates review disagreements and
+  integrates the work. It weighs Codex's work, opinions and critiques seriously; when it
+  disagrees, it explains why with evidence.
 - **Codex** collaborates: it reviews diffs, critiques design proposals, and implements
   issues (or clearly bounded parts of issues) assigned to it.
-- **Humans** approve merges, licensing decisions and publication.
+- **Humans** decide when the agents disagree, and approve merges, licensing decisions and
+  publication.
+- Both agents have exactly the same permissions and prohibitions (see "Security and
+  permissions"); only their roles differ.
 
 ### Ownership and boundaries
 
@@ -52,7 +57,8 @@ first when it exists: its Now board shows who works on what.
 
 ### Design review (substantive topics only)
 
-For architecture, data model, spikes, experiments and research directions:
+For planning (task breakdown, priorities, sequencing), architecture, data model, spikes,
+experiments and research directions, the other agent critiques before anything is applied:
 
 1. The proposing agent writes `.collab/reviews/<issue>-<topic>.md`: problem, options,
    recommendation, risks.

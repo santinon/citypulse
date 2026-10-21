@@ -73,10 +73,16 @@ FORBIDDEN_COMMANDS = [
     (r"\bgit\s+push\b[^|;&]*\s\+\S", "force push via +refspec"),
     (r"\bgit\s+reset\s+--hard\b", "hard reset discards work"),
     (r"\bgit\s+clean\b", "git clean deletes untracked files"),
-    (r"\bgit\s+branch\s+-D\b", "forced branch deletion"),
+    (r"\bgit\s+branch\s+(?-i:-D)\b", "forced branch deletion"),
     (r"\bgit\b[^|;&]*\s--no-verify\b", "--no-verify skips the git hooks"),
     (r"\bgit\s+commit\b[^|;&]*\s-[A-Za-z]*n[A-Za-z]*(?:\s|$)", "commit -n skips the git hooks"),
     (r"\bgit\b[^|;&]*\s--git-dir\b|\bGIT_DIR=", "redirecting git internals"),
+    # curl options are case-sensitive: -d data vs -D dump-header, -F form vs -f fail, -T upload.
+    (r"\bcurl\b[^|;&]*\s(?-i:-d|--data\S*|-F|--form\S*|-T|--upload-file|--json)(?:\s|=|$)", "sending data out needs the user"),
+    (r"\bcurl\b[^|;&]*\s(?:(?-i:-X)\s*|--request[\s=]+)(?:POST|PUT|PATCH|DELETE)\b", "sending data out needs the user"),
+    (r"\bwget\b[^|;&]*\s--(?:post-data|post-file|body-data|body-file|method)\b", "sending data out needs the user"),
+    (r"\b(?:Invoke-WebRequest|Invoke-RestMethod|iwr|irm)\b[^|;&]*\s-(?:Method\s+(?:Post|Put|Patch|Delete)|Body|InFile)\b", "sending data out needs the user"),
+    (r"\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b[^;&]*\|\s*(?:sh|bash|zsh|node|iex|Invoke-Expression)\b", "download-and-execute needs the user"),
     (r"\bdocker\s+(?:volume\s+rm|system\s+prune|\S+\s+prune)\b", "deletes Docker data"),
     (r"\bdocker\s+compose\b[^|;&]*\s(?:-v|--volumes)(?:\s|$)", "deletes Docker volumes"),
     (r"\bnpm\s+(?:install|i|add)\b[^|;&]*\s(?:-g|--global)\b", "global installs are done by a human"),
@@ -124,6 +130,17 @@ def check_shell(command: str) -> None:
     for pattern, reason in FORBIDDEN_COMMANDS:
         if re.search(pattern, command, re.I):
             block(f"`{command[:120]}`: {reason}.")
+    # Downloaded content piped into a Python that runs its stdin as code (no -c, no script file).
+    # `curl ... | python -c "...json..."` only parses data and stays allowed.
+    if re.search(r"\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b", command, re.I):
+        for stage in command.split("|")[1:]:
+            words = stage.split()
+            while words and "=" in words[0]:  # skip VAR=value prefixes
+                words = words[1:]
+            if words and re.fullmatch(r"(?:python3?|py)(?:\.exe)?", words[0], re.I):
+                rest = " ".join(words[1:])
+                if not re.search(r"(?:^|\s)-c\b|\.py\b", rest):
+                    block(f"`{command[:120]}`: download-and-execute needs the user.")
     # Any command segment touching core.hooksPath, except a plain read, could disable the git hooks.
     for segment in re.split(r"[;&|\n]", command):
         if re.search(r"core\.hookspath", segment, re.I) and not re.search(r"\bconfig\s+--get\b", segment, re.I):
