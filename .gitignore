@@ -2,6 +2,8 @@
 docs/internal/
 .claude/settings.local.json
 .claude/hooks/
+.agent-policy/local_roots.txt
+.collab/
 .agents/
 .tmp/
 

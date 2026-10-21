@@ -9,9 +9,10 @@
 # Enable once per clone:  git config core.hooksPath .githooks
 
 # Paths that must never enter the history: internal planning notes, the local
-# agent coordination log, scratch files, machine-local agent settings and hooks,
-# and environment files (except the committed template).
-PRIVATE_RE='^docs/internal/|^\.agents/|^\.tmp/|^\.claude/settings\.local\.json$|^\.claude/hooks/|(^|/)\.env$|(^|/)\.env\.[^/]*$'
+# agent coordination folder (.collab/, formerly .agents/), scratch files,
+# machine-local agent settings, hooks and extra write roots, and environment
+# files (except the committed template).
+PRIVATE_RE='^docs/internal/|^\.collab/|^\.agents/|^\.tmp/|^\.claude/settings\.local\.json$|^\.claude/hooks/|^\.agent-policy/local_roots\.txt$|(^|/)\.env$|(^|/)\.env\.[^/]*$'
 PUBLIC_EXCEPTION_RE='(^|/)\.env\.example$'
 
 # AI attribution in commit messages (project rule: none in commits or code).
