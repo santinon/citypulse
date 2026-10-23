@@ -101,6 +101,8 @@ agent permissions and hooks, and publish.
   `core.hooksPath`), force-push, delete remote branches, hard-reset, `git clean`, delete
   Docker volumes, call `gh api`, install packages globally, launch desktop applications,
   or read credentials.
+- Nothing private, personal, compromising or confidential is committed, pushed or sent
+  outside without the owner's prior approval; when in doubt, ask.
 - Enforcement: `.agent-policy/guard.py` runs before the tool calls of every agent (from
   the Claude Code and Codex hook settings), the git hooks in `.githooks/` check commits
   and pushes, and `main` is protected on GitHub. Report a blocked action; never work
