@@ -5,6 +5,7 @@ docs/internal/
 .agent-policy/local_roots.txt
 .collab/
 .agents/
+.firecrawl/
 .tmp/
 
 # Environment and secrets

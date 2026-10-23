@@ -6,6 +6,10 @@
 
 zero=0000000000000000000000000000000000000000
 problems=""
+# NUL-separated file names go through a temporary file: a shell variable would drop the
+# NUL separators and glue the names together, hiding every private path but the first.
+names_file=$(mktemp) || { echo "pre-push: cannot create a temporary file; refusing." >&2; exit 1; }
+trap 'rm -f "$names_file"' EXIT
 while read -r local_ref local_sha remote_ref remote_sha; do
     [ -z "$local_sha" ] && continue
     [ "$local_sha" = "$zero" ] && continue    # deleting a remote ref: nothing is sent
@@ -16,11 +20,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     fi
     # Fail closed: if the commits cannot be listed, nothing is pushed.
     # shellcheck disable=SC2086
-    names=$(git log -m --format= --name-only -z --diff-filter=d $range) || {
+    git log -m --format= --name-only -z --diff-filter=d $range > "$names_file" || {
         echo "pre-push: could not list the commits being pushed ($range); refusing." >&2
         exit 1
     }
-    files=$(printf '%s' "$names" | tr '\0' '\n' | sort -u | private_paths)
+    files=$(tr '\0' '\n' < "$names_file" | sort -u | private_paths)
     # shellcheck disable=SC2086
     trailers=$(git log --format=%B $range | ai_trailers)
     [ -n "$files" ] && problems="$problems

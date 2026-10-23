@@ -9,10 +9,13 @@
 # Enable once per clone:  git config core.hooksPath .githooks
 
 # Paths that must never enter the history: internal planning notes, the local
-# agent coordination folder (.collab/, formerly .agents/), scratch files,
+# agent coordination folder (.collab/, formerly .agents/), captures of third-party
+# web pages (.firecrawl/, not ours to republish), scratch files,
 # machine-local agent settings, hooks and extra write roots, and environment
-# files (except the committed template).
-PRIVATE_RE='^docs/internal/|^\.collab/|^\.agents/|^\.tmp/|^\.claude/settings\.local\.json$|^\.claude/hooks/|^\.agent-policy/local_roots\.txt$|(^|/)\.env$|(^|/)\.env\.[^/]*$'
+# files. The template exception (.env.example) applies to environment files only:
+# a template inside one of the private folders stays private.
+PRIVATE_RE='^docs/internal/|^\.collab/|^\.agents/|^\.firecrawl/|^\.tmp/|^\.claude/settings\.local\.json$|^\.claude/hooks/|^\.agent-policy/local_roots\.txt$'
+PRIVATE_ENV_RE='(^|/)\.env$|(^|/)\.env\.[^/]*$'
 PUBLIC_EXCEPTION_RE='(^|/)\.env\.example$'
 
 # AI attribution in commit messages (project rule: none in commits or code).
@@ -25,8 +28,12 @@ AI_TRAILER_RE='^co-authored-by:.*(anthropic|openai|codex|chatgpt|copilot|gemini|
 private_paths() {
     while IFS= read -r path; do
         [ -z "$path" ] && continue
-        printf '%s\n' "$path" | grep -Eq "$PUBLIC_EXCEPTION_RE" && continue
-        printf '%s\n' "$path" | grep -Eq "$PRIVATE_RE" && printf '%s\n' "$path"
+        if printf '%s\n' "$path" | grep -Eq "$PRIVATE_RE"; then
+            printf '%s\n' "$path"
+        elif printf '%s\n' "$path" | grep -Eq "$PRIVATE_ENV_RE" &&
+            ! printf '%s\n' "$path" | grep -Eq "$PUBLIC_EXCEPTION_RE"; then
+            printf '%s\n' "$path"
+        fi
     done
     return 0
 }

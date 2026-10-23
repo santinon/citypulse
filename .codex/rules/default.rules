@@ -1,0 +1,187 @@
+# Codex command rules. Mirrors the deny, allow and ask lists of Claude Code
+# (.claude/settings.json) and .agent-policy/guard.py.
+# When several rules match, the most restrictive decision wins.
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "forbidden",
+    justification = "Merging is done by a human.",
+    match = ["gh pr merge 18 --squash"],
+)
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "forbidden",
+    justification = "GitHub API calls are done by a human; use gh pr view or gh issue view to read.",
+    match = ["gh api repos/santinon/citypulse"],
+)
+prefix_rule(
+    pattern = ["gh", "repo", ["delete", "edit", "rename", "archive"]],
+    decision = "forbidden",
+    justification = "Repository settings are changed by a human.",
+)
+prefix_rule(
+    pattern = ["gh", ["secret", "release", "workflow"]],
+    decision = "forbidden",
+    justification = "Secrets, releases and workflows are handled by a human.",
+)
+prefix_rule(
+    pattern = ["gh", "auth", "token"],
+    decision = "forbidden",
+    justification = "Credentials must not be read.",
+)
+prefix_rule(
+    pattern = ["git", "credential"],
+    decision = "forbidden",
+    justification = "Credentials must not be read.",
+)
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--force-with-lease", "--mirror", "--delete", "-d", "--prune"]],
+    decision = "forbidden",
+    justification = "Destructive push.",
+    match = ["git push --force origin main"],
+    not_match = ["git push -u origin 4-gbfs-client"],
+)
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "A hard reset discards work.",
+)
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "forbidden",
+    justification = "git clean deletes untracked files.",
+)
+prefix_rule(
+    pattern = ["git", "branch", "-D"],
+    decision = "forbidden",
+    justification = "Forced branch deletion.",
+)
+prefix_rule(
+    pattern = ["git", ["commit", "push"], ["--no-verify", "-n"]],
+    decision = "forbidden",
+    justification = "Skipping the git hooks bypasses the private-file and attribution checks.",
+    match = ["git push --no-verify origin x", "git commit -n -m x"],
+)
+prefix_rule(
+    pattern = ["git", "config", ["core.hooksPath", "--unset"]],
+    decision = "forbidden",
+    justification = "Changing core.hooksPath can disable the git hooks.",
+    match = ["git config core.hooksPath /dev/null", "git config --unset core.hooksPath"],
+)
+prefix_rule(
+    pattern = ["git", "-c"],
+    decision = "forbidden",
+    justification = "Per-command config overrides can disable the git hooks.",
+)
+prefix_rule(
+    pattern = ["docker", ["volume", "system"], ["rm", "prune"]],
+    decision = "forbidden",
+    justification = "Deletes Docker data.",
+)
+prefix_rule(
+    pattern = ["npm", ["install", "i"], ["-g", "--global"]],
+    decision = "forbidden",
+    justification = "Global installs are done by a human.",
+)
+prefix_rule(
+    pattern = ["uv", "tool", "install"],
+    decision = "forbidden",
+    justification = "Installs are done by a human.",
+)
+prefix_rule(
+    pattern = [["pip", "pip3"], "install"],
+    decision = "forbidden",
+    justification = "Installs are done by a human.",
+)
+prefix_rule(
+    pattern = [["winget", "choco"]],
+    decision = "forbidden",
+    justification = "Installs are done by a human.",
+)
+prefix_rule(
+    pattern = [["Start-Process", "Invoke-Item", "start", "explorer", "explorer.exe"]],
+    decision = "forbidden",
+    justification = "Launching desktop applications needs the user.",
+)
+
+# Same permissions as Claude Code (owner decision, 2026-10-21). "allow" runs outside the
+# sandbox without asking, like the allow list of .claude/settings.json; "prompt" mirrors
+# its ask list. Prefix rules cannot see trailing flags (`git push origin x --force`,
+# `npm install x -g`): the shared guard called by the PreToolUse hook refuses those.
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "allow",
+    justification = "Pushing a work branch is free for both agents; main is protected on GitHub.",
+    match = ["git push -u origin 4-gbfs-client"],
+)
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "allow",
+    justification = "Opening a pull request is free for both agents; merging is human-only.",
+)
+prefix_rule(
+    pattern = ["firecrawl", ["scrape", "search"]],
+    decision = "allow",
+    justification = "Firecrawl spends credits; use it only when a normal fetch fails.",
+)
+prefix_rule(
+    pattern = ["uv", ["sync", "lock", "add", "remove"]],
+    decision = "allow",
+    justification = "Project-local dependency management, same as Claude Code.",
+)
+prefix_rule(
+    pattern = ["npm", "ci"],
+    decision = "allow",
+    justification = "Installs exactly the lockfile, same as Claude Code.",
+)
+prefix_rule(
+    pattern = ["gh", "repo", ["create", "fork", "sync"]],
+    decision = "prompt",
+    justification = "Creating or syncing repositories needs the human.",
+)
+prefix_rule(
+    pattern = ["gh", "issue", ["create", "edit", "close", "reopen", "comment", "delete"]],
+    decision = "prompt",
+    justification = "Changing issues needs the human.",
+)
+prefix_rule(
+    pattern = ["gh", "pr", ["edit", "close", "comment", "review"]],
+    decision = "prompt",
+    justification = "Reviews stay local in .collab/reviews/; changing a pull request needs the human.",
+)
+prefix_rule(
+    pattern = ["gh", ["label", "auth"]],
+    decision = "prompt",
+    justification = "Labels and authentication need the human.",
+)
+prefix_rule(
+    pattern = [["rm", "rmdir", "Remove-Item"]],
+    decision = "prompt",
+    justification = "Deleting files needs the human, same as Claude Code.",
+)
+prefix_rule(
+    pattern = ["git", "restore"],
+    decision = "prompt",
+    justification = "Discarding changes needs the human.",
+)
+prefix_rule(
+    pattern = ["git", "worktree", "add"],
+    decision = "forbidden",
+    justification = "A new worktree is created outside the project; the human runs the command.",
+)
+prefix_rule(
+    pattern = ["git", "worktree", "remove"],
+    decision = "prompt",
+    justification = "Removing a worktree needs the human.",
+    not_match = ["git worktree list"],
+)
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "prompt",
+    justification = "Discarding changes needs the human.",
+)
+prefix_rule(
+    pattern = ["git", "stash", ["drop", "clear"]],
+    decision = "prompt",
+    justification = "Dropping stashed work needs the human.",
+)

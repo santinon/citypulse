@@ -1,0 +1,26 @@
+# Codex settings for this repository. Codex loads them only after you mark the
+# project as trusted. Same policy as Claude Code: see AGENTS.md and .agent-policy/.
+# Codex cannot edit this folder from its workspace-write sandbox.
+
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+[sandbox_workspace_write]
+# Same as Claude Code (owner decision, 2026-10-21). Outbound data and download-and-execute
+# are refused by the shared guard, for both agents.
+network_access = true
+
+# Shared guard: the same script Claude Code's hook calls.
+[[hooks.PreToolUse]]
+matcher = "^(apply_patch|Edit|Write|Bash)$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'sh "$(git rev-parse --show-toplevel)/.agent-policy/guard.sh"'
+# Windows: `sh` is not on the PATH. Codex runs the hook through the session shell
+# (PowerShell 5.1 here), which turns a failing native exit code into 1, and Codex lets the
+# action through on 1 (seen live 2026-10-22). The wrapper maps every result other than 0
+# (block, crash, python or script not found) to 2 = block. Hooks run in the session cwd
+# (the repo root). Under cmd.exe the `;` makes Python look for a missing script: exit 2.
+command_windows = 'python -I .agent-policy/guard.py; if ($? -and $LASTEXITCODE -eq 0) { exit 0 } else { exit 2 }'
+timeout = 10

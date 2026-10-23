@@ -29,28 +29,38 @@ Scope, priorities and acceptance criteria live in the GitHub issues and mileston
 
 ### Roles
 
-- **Claude Code** is the default implementer and lead designer.
+- **Claude Code** leads: it plans, assigns tasks, arbitrates review disagreements and
+  integrates the work. It weighs Codex's work, opinions and critiques seriously; when it
+  disagrees, it explains why with evidence.
 - **Codex** collaborates: it reviews diffs, critiques design proposals, and implements
   issues (or clearly bounded parts of issues) assigned to it.
-- **Humans** approve merges, licensing decisions and publication.
+- **Humans** decide when the agents disagree, and approve merges, licensing decisions and
+  publication.
+- Both agents have exactly the same permissions and prohibitions (see "Security and
+  permissions"); only their roles differ.
 
 ### Ownership and boundaries
 
-- One agent owns an issue and its branch at a time. Parallel work is allowed only on
-  disjoint paths.
-- Before starting, the agent appends a `START` entry to the local coordination log
-  `.agents/WORKLOG.md` (gitignored): issue, branch and the exact paths it will touch.
-  When it stops, it appends an `END` entry: what was done, files changed, checks run,
-  what is left and open questions for the other agent.
-- An agent never edits paths declared in the other agent's open `START` entry.
+Coordination lives in the local, gitignored `.collab/` folder. Read `.collab/HANDOFF.md`
+first when it exists: its Now board shows who works on what.
+
+- One agent owns an issue and its branch at a time, in its own git worktree. Parallel
+  work is allowed only on disjoint paths.
+- Before starting, the agent claims its row on the Now board and appends a `START` entry
+  to `.collab/WORKLOG.md`: issue, branch and the exact paths it will touch. When it
+  stops, it appends an `END` entry: what was done, files changed, checks run, what is
+  left and open questions for the other agent. An agent that cannot write to `.collab/`
+  gives these entries in its final message for the other agent to record.
+- An agent never edits paths claimed by the other agent, nor the other agent's worktree.
 - Do not mark authorship inside code or commits (no "begin/end <agent>" comments,
   no AI trailers). Boundaries are recorded in the log, at file or module level.
 
 ### Design review (substantive topics only)
 
-For architecture, data model, spikes, experiments and research directions:
+For planning (task breakdown, priorities, sequencing), architecture, data model, spikes,
+experiments and research directions, the other agent critiques before anything is applied:
 
-1. The proposing agent writes `.agents/reviews/<issue>-<topic>.md`: problem, options,
+1. The proposing agent writes `.collab/reviews/<issue>-<topic>.md`: problem, options,
    recommendation, risks.
 2. The other agent appends a `Feedback` section: agreement, concerns, checks to run.
 3. The proposer records the `Decision`, then implements.
@@ -66,7 +76,7 @@ unless a blocker is found.
 3. The owner implements and runs the full validation gate locally (see Commands).
 4. Open a pull request that closes the issue and fill in the PR template.
 5. The other agent reviews the diff read-only. Findings and their triage are recorded
-   locally in `.agents/reviews/` (gitignored), not posted on the pull request; the owner
+   locally in `.collab/reviews/` (gitignored), not posted on the pull request; the owner
    fixes the justified findings before merge. One review pass and one fix pass, unless a
    severe defect is found.
 6. CI green, then a human approves and merges (squash merge).
@@ -76,6 +86,27 @@ Rules:
 - Keep pull requests small (aim for fewer than 400 changed lines, excluding lockfiles and fixtures).
 - Trunk-based development: `main` stays releasable; no long-lived branches.
 - Prefer deterministic scripts over agents when a script is enough.
+
+## Security and permissions (identical for every agent)
+
+Agents propose; humans apply. Humans merge pull requests, change repository settings,
+agent permissions and hooks, and publish.
+
+- Write only inside your own worktree, plus the machine-specific roots a human lists in
+  `.agent-policy/local_roots.txt` (gitignored). Never write in another agent's worktree.
+- Never edit agent permissions, hooks or policy: `.claude/settings*`, `.claude/hooks/`,
+  `.codex/`, `.agent-policy/`, `.githooks/`, `.git`. To change one, write the proposed
+  file under `.tmp/proposed/` and let a human apply it.
+- Never bypass or disable the git hooks (`--no-verify`, `git commit -n`, changing
+  `core.hooksPath`), force-push, delete remote branches, hard-reset, `git clean`, delete
+  Docker volumes, call `gh api`, install packages globally, launch desktop applications,
+  or read credentials.
+- Nothing private, personal, compromising or confidential is committed, pushed or sent
+  outside without the owner's prior approval; when in doubt, ask.
+- Enforcement: `.agent-policy/guard.py` runs before the tool calls of every agent (from
+  the Claude Code and Codex hook settings), the git hooks in `.githooks/` check commits
+  and pushes, and `main` is protected on GitHub. Report a blocked action; never work
+  around it.
 
 ## Commands
 
