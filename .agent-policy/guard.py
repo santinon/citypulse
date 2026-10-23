@@ -157,11 +157,15 @@ def main() -> None:
     try:
         data = json.load(sys.stdin)
         tool = str(data.get("tool_name") or "").lower()
+        if not tool:
+            raise ValueError("no tool_name")
         tool_input = data.get("tool_input") or {}
         cwd = data.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or str(REPO)
         command = tool_input.get("command", "")
         if isinstance(command, list):
             command = "\n".join(str(part) for part in command)
+        if not isinstance(command, str):
+            raise TypeError("command is not text")
     except Exception as exc:  # fail closed
         block(f"could not parse hook input ({exc!r})")
         return
@@ -178,6 +182,8 @@ def main() -> None:
         for raw in paths:
             check_path(raw, cwd)
     elif tool in SHELL_TOOLS:
+        if not command.strip():
+            block("no command in shell tool input")
         check_shell(command)
     sys.exit(0)
 
