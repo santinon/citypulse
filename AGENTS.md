@@ -123,6 +123,15 @@ The hooks refuse to commit or push private files (internal notes, the local agen
 scratch files, machine-local agent settings, `.env` files) and AI attribution trailers in
 commit messages. The rules live in `.githooks/guards.sh`.
 
+Agent policy tests (the shared guard, the git hooks, and Codex's hook command and rules).
+Run them from the repository root, in Git Bash on Windows. They work on temporary copies and
+never change the real agent settings; the Codex parts report SKIP without Windows or without
+the Codex CLI of the VS Code extension:
+
+```sh
+python tests/policy/run_all.py
+```
+
 ## Data contract (non-negotiable)
 
 - **Missing is not zero.** A station without a valid status has `null` availability, never `0`.
