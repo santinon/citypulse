@@ -61,6 +61,8 @@ WRITE_HINT = re.compile(
     r"\b(?:python3?|py|node|perl|ruby|powershell|pwsh|sh|bash)\b",
     re.I,
 )
+# A protected path; inside it, a .py or .sh extension (guard.py, guards.sh) is no interpreter.
+PROTECTED_TOKEN = re.compile(r"[\w.:/\\-]*(?:" + PROTECTED_REF.pattern + r")[\w.:/\\-]*", re.I)
 # Destructive or outward-facing commands, refused wherever they appear in a command.
 FORBIDDEN_COMMANDS = [
     (r"\bgh\s+pr\s+merge\b", "merging is done by a human"),
@@ -69,8 +71,9 @@ FORBIDDEN_COMMANDS = [
     (r"\bgh\s+(?:secret|release|workflow)\b", "secrets, releases and workflows are handled by a human"),
     (r"\bgh\s+auth\s+token\b", "credentials must not be read"),
     (r"\bgit\s+credential\b", "credentials must not be read"),
-    (r"\bgit\s+push\b[^|;&]*\s(?:--force\S*|-f|--mirror|--delete|-d|--prune)(?:\s|$)", "destructive push"),
+    (r"\bgit\s+push\b[^|;&]*\s(?:--force\S*|-f|--mirror|--all|--delete|-d|--prune)(?:\s|$)", "destructive push"),
     (r"\bgit\s+push\b[^|;&]*\s\+\S", "force push via +refspec"),
+    (r"\bgit\s+push\b[^|;&]*\s[\"']?:\S", "deleting a remote branch (empty source refspec)"),
     (r"\bgit\s+reset\s+--hard\b", "hard reset discards work"),
     (r"\bgit\s+clean\b", "git clean deletes untracked files"),
     (r"\bgit\s+branch\s+(?-i:-D)\b", "forced branch deletion"),
@@ -145,7 +148,8 @@ def check_shell(command: str) -> None:
     for segment in re.split(r"[;&|\n]", command):
         if re.search(r"core\.hookspath", segment, re.I) and not re.search(r"\bconfig\s+--get\b", segment, re.I):
             block(f"`{segment.strip()[:120]}`: changing core.hooksPath can disable the git hooks.")
-    if PROTECTED_REF.search(command) and WRITE_HINT.search(command):
+    hints = PROTECTED_TOKEN.sub(lambda m: re.sub(r"\.(?:py|sh)\b", "", m.group(), flags=re.I), command)
+    if PROTECTED_REF.search(command) and WRITE_HINT.search(hints):
         block(f"`{command[:120]}` may write to protected agent or git configuration.")
 
 
