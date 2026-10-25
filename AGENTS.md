@@ -110,8 +110,8 @@ agent permissions and hooks, and publish.
 
 ## Commands
 
-This section lists only commands that actually work. Build and test commands will be
-added by issue #3 (backend) and issue #8 (frontend).
+This section lists only commands that actually work. Frontend commands will be added by
+issue #8. The full local validation gate is every check in this section.
 
 One-time setup after cloning (enables the git hooks in `.githooks/`):
 
@@ -137,6 +137,24 @@ subprocess and use no network beyond a local server on 127.0.0.1:
 
 ```sh
 uv run --python 3.12 --no-project --with pytest==8.4.2 --with geographiclib==2.0 pytest tests/audit -q
+```
+
+Backend quality gate (issue #3). Run from `backend/`; CI runs the same commands on every
+pull request (`.github/workflows/backend.yml`):
+
+```sh
+uv sync --locked
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
+uv run pytest
+```
+
+Run the API locally from `backend/` (OpenAPI docs at http://127.0.0.1:8000/docs). Settings
+come from environment variables or a local `.env`, documented in `backend/.env.example`:
+
+```sh
+uv run uvicorn citypulse.main:create_app --factory
 ```
 
 ## Data contract (non-negotiable)
