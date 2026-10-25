@@ -3,7 +3,8 @@
 Bike-share availability monitoring and analysis, starting with the official BIXI GBFS feed.
 "CityPulse" is a working name.
 
-**Status: pre-alpha.** The repository has just been bootstrapped; nothing runs yet.
+**Status: pre-alpha.** Only the backend skeleton runs (a health endpoint); see the
+"Commands" section of [AGENTS.md](AGENTS.md).
 
 ## What the MVP will do
 
