@@ -31,6 +31,14 @@ def test_env_file_in_working_directory_is_read(tmp_path: Path) -> None:
     assert str(Settings().gbfs_discovery_url) == OTHER_URL
 
 
+def test_environment_variable_wins_over_env_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    (tmp_path / ".env").write_text(f"GBFS_DISCOVERY_URL={OTHER_URL}\n", encoding="utf-8")
+    monkeypatch.setenv("GBFS_DISCOVERY_URL", "https://example.net/gbfs.json")
+    assert str(Settings().gbfs_discovery_url) == "https://example.net/gbfs.json"
+
+
 def test_copied_env_example_keeps_the_defaults(tmp_path: Path) -> None:
     shutil.copyfile(ENV_EXAMPLE, tmp_path / ".env")
     settings = Settings()
