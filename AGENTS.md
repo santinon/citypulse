@@ -132,6 +132,13 @@ the Codex CLI of the VS Code extension:
 python tests/policy/run_all.py
 ```
 
+Audit script tests (issue #2). They run the script as a
+subprocess and use no network beyond a local server on 127.0.0.1:
+
+```sh
+uv run --python 3.12 --no-project --with pytest==8.4.2 --with geographiclib==2.0 pytest tests/audit -q
+```
+
 ## Data contract (non-negotiable)
 
 - **Missing is not zero.** A station without a valid status has `null` availability, never `0`.

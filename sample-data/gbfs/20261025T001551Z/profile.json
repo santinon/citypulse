@@ -1,0 +1,370 @@
+{
+  "alerts": {
+    "active_at_reference": 0,
+    "records": 51,
+    "summaries_by_type": {
+      "OTHER": [
+        "Enhanced BIXI service",
+        "Enhanced BIXI service ",
+        "Information",
+        "Network Info"
+      ],
+      "SYSTEM_CLOSURE": [
+        "Early network opening",
+        "Good news — more BIXIs are coming !",
+        "Information",
+        "Network Info",
+        "New Amis BIXI Reward"
+      ]
+    },
+    "types": {
+      "OTHER": 39,
+      "SYSTEM_CLOSURE": 12
+    },
+    "with_region_ids": 0,
+    "with_station_ids": 0,
+    "with_times": 51,
+    "without_times": 0
+  },
+  "capacity": {
+    "equals_bikes_docks": 713,
+    "equals_bikes_docks_disabled": 1121,
+    "excluded": 0,
+    "population": 1121
+  },
+  "coordinates": {
+    "non_finite": 0,
+    "non_numeric": 0,
+    "out_of_range": 0,
+    "valid": 1117,
+    "zero_zero": 4,
+    "zero_zero_stations": [
+      {
+        "capacity": 0,
+        "last_reported_invalid": true,
+        "station_id": "304"
+      },
+      {
+        "capacity": 0,
+        "last_reported_invalid": true,
+        "station_id": "36"
+      },
+      {
+        "capacity": 23,
+        "last_reported_invalid": false,
+        "station_id": "724"
+      },
+      {
+        "capacity": 0,
+        "last_reported_invalid": true,
+        "station_id": "747"
+      }
+    ]
+  },
+  "discovery": {
+    "feeds": {
+      "en": [
+        "station_status",
+        "station_information",
+        "system_alerts",
+        "system_information"
+      ],
+      "fr": [
+        "station_status",
+        "station_information",
+        "system_alerts",
+        "system_information"
+      ]
+    },
+    "languages": [
+      "en",
+      "fr"
+    ]
+  },
+  "fields": {
+    "station_information": {
+      "capacity": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "eightd_has_key_dispenser": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "eightd_station_services": {
+        "records": 1,
+        "types": {
+          "list": 1
+        }
+      },
+      "electric_bike_surcharge_waiver": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "external_id": {
+        "records": 1121,
+        "types": {
+          "str": 1121
+        }
+      },
+      "has_kiosk": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "is_charging": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "lat": {
+        "records": 1121,
+        "types": {
+          "float": 1121
+        }
+      },
+      "lon": {
+        "records": 1121,
+        "types": {
+          "float": 1121
+        }
+      },
+      "name": {
+        "records": 1121,
+        "types": {
+          "str": 1121
+        }
+      },
+      "rental_methods": {
+        "records": 1121,
+        "types": {
+          "list": 1121
+        }
+      },
+      "short_name": {
+        "records": 1121,
+        "types": {
+          "str": 1121
+        }
+      },
+      "station_id": {
+        "records": 1121,
+        "types": {
+          "str": 1121
+        }
+      }
+    },
+    "station_status": {
+      "eightd_active_station_services": {
+        "records": 1,
+        "types": {
+          "list": 1
+        }
+      },
+      "eightd_has_available_keys": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "is_charging": {
+        "records": 1121,
+        "types": {
+          "bool": 1121
+        }
+      },
+      "is_installed": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "is_renting": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "is_returning": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "last_reported": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "num_bikes_available": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "num_bikes_disabled": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "num_docks_available": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "num_docks_disabled": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "num_ebikes_available": {
+        "records": 1121,
+        "types": {
+          "int": 1121
+        }
+      },
+      "station_id": {
+        "records": 1121,
+        "types": {
+          "str": 1121
+        }
+      }
+    }
+  },
+  "files": {
+    "en/station_information.json": {
+      "bytes": 382993,
+      "content_type": "application/json",
+      "has_version": false,
+      "http_status": 200,
+      "last_updated": 1792887350,
+      "ttl": 10
+    },
+    "en/station_status.json": {
+      "bytes": 303890,
+      "content_type": "application/json",
+      "has_version": false,
+      "http_status": 200,
+      "last_updated": 1792887350,
+      "ttl": 10
+    },
+    "en/system_alerts.json": {
+      "bytes": 19840,
+      "content_type": "application/json",
+      "has_version": false,
+      "http_status": 200,
+      "last_updated": 1792887350,
+      "ttl": 10
+    },
+    "en/system_information.json": {
+      "bytes": 312,
+      "content_type": "application/json",
+      "has_version": false,
+      "http_status": 200,
+      "last_updated": 1792887350,
+      "ttl": 10
+    },
+    "gbfs.json": {
+      "bytes": 815,
+      "content_type": "application/json",
+      "has_version": false,
+      "http_status": 200,
+      "last_updated": 1792887350,
+      "ttl": 10
+    }
+  },
+  "flags": {
+    "combinations": {
+      "0,1,1": 5,
+      "1,1,1": 1116
+    },
+    "is_installed": {
+      "int:0": 5,
+      "int:1": 1116
+    },
+    "is_renting": {
+      "int:1": 1121
+    },
+    "is_returning": {
+      "int:1": 1121
+    }
+  },
+  "lang": "en",
+  "last_reported": {
+    "age_seconds": {
+      "max": 3135522,
+      "median": 634.5,
+      "min": 2,
+      "n": 1118,
+      "p90": 2308
+    },
+    "future_tolerated": 0,
+    "invalid": 3,
+    "invalid_values": {
+      "86400": 3
+    },
+    "older_than": {
+      "2592000": 1,
+      "3600": 63,
+      "86400": 2
+    },
+    "records": 1121
+  },
+  "manifest_sha256": "c818399c9c9f484ef5970ccf5e549c68402d4c6f8ab9fcb7677e6d3247fd1b4b",
+  "reference_time": "2026-10-25T00:15:51Z",
+  "reference_time_posix": 1792887351,
+  "remote_stations": {
+    "beyond_50km": {
+      "count": 25,
+      "lat_max": 45.41233566650505,
+      "lat_min": 45.379756292248274,
+      "lon_max": -71.87262399125757,
+      "lon_min": -71.92877769470215
+    },
+    "buckets_km": {
+      "0-10": 876,
+      "10-50": 216,
+      "100+": 25,
+      "50-100": 0
+    },
+    "origin": {
+      "lat": 45.52300306499666,
+      "lon": -73.58193688100073
+    }
+  },
+  "rental_methods": {
+    "records_invalid": 0,
+    "records_without": 0,
+    "values": {
+      "CREDITCARD": 1121,
+      "KEY": 1121
+    }
+  },
+  "schema": "citypulse.gbfs_audit.profile/1",
+  "script_version": "0.1.0",
+  "stations": {
+    "information_duplicate_ids": 0,
+    "information_invalid_ids": 0,
+    "information_records": 1121,
+    "join": {
+      "both": 1121,
+      "information_only": 0,
+      "status_only": 0
+    },
+    "status_duplicate_ids": 0,
+    "status_invalid_ids": 0,
+    "status_records": 1121
+  }
+}
