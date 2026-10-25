@@ -1,0 +1,25 @@
+# Registry of the data sources used by CityPulse (issue #2).
+# checked_on = date of the last check against the primary source named in licence_source.
+# Other sources join this file with their own issues.
+sources:
+  - id: bixi_gbfs
+    name: BIXI Montréal GBFS feed (station information, station status, system alerts)
+    publisher: BIXI Montréal
+    format: GBFS (the discovery file declares no version)
+    discovery_url: https://gbfs.velobixi.com/gbfs/gbfs.json
+    catalogue_url: https://donnees.montreal.ca/en/dataset/89fdc53c-cf70-485f-ab1a-9b10044d9f15
+    licence: CC-BY-4.0
+    licence_url: https://creativecommons.org/licenses/by/4.0/
+    licence_source: Montréal open-data catalogue API (package_show, license_id cc-by)
+    attribution: BIXI Montréal
+    checked_on: 2026-10-24
+    expected_refresh: >-
+      ttl 10 s in every file of snapshot 20261025T001551Z; the catalogue gives an update
+      frequency of "continuous".
+    access_notes:
+      - No API key.
+      - Feed URLs are read from the discovery file at request time, never hardcoded.
+      - The audit script keeps no cookies and sends a project User-Agent.
+      - The licence covers the data, not BIXI trademarks or logos; do not use the BIXI logo.
+    snapshots:
+      - sample-data/gbfs/20261025T001551Z
