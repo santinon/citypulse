@@ -139,6 +139,10 @@ subprocess and use no network beyond a local server on 127.0.0.1:
 uv run --python 3.12 --no-project --with pytest==8.4.2 --with geographiclib==2.0 pytest tests/audit -q
 ```
 
+CI runs these two suites on every pull request and push to `main`
+(`.github/workflows/repo-tests.yml`, jobs `audit` and `policy`, Linux): guard cases that only
+apply to Windows report SKIP with their reason, and the Codex parts report SKIP.
+
 Backend quality gate (issue #3). Run from `backend/`; CI runs the same commands on every
 pull request (`.github/workflows/backend.yml`):
 

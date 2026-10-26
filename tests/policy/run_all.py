@@ -33,6 +33,10 @@ for name, argv in TESTS:
     summary = lines[-1] if lines else "(no output)"
     status = "PASS" if proc.returncode == 0 else "SKIP" if proc.returncode == SKIP else "FAIL"
     print(f"{status}  {name}: {summary}")
+    if status == "PASS":  # a passing suite may still skip cases: show which ones and why
+        for line in lines:
+            if line.startswith("SKIP"):
+                print("      " + line)
     if status == "FAIL":
         failed += 1
         print("\n".join("      " + line for line in (proc.stdout + proc.stderr).splitlines()))
