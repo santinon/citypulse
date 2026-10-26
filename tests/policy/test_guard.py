@@ -165,6 +165,37 @@ CASES = [
     (2, "write: PowerShell path with backslashes", {"tool_name": "PowerShell", "tool_input": {"command": "python -I x.py .agent-policy\\guard.py"}, "cwd": R}),
     (0, "read: two protected files at once", claude_bash("cat .agent-policy/guard.py .githooks/guards.sh")),
     (0, "read: quoted protected path", {"tool_name": "PowerShell", "tool_input": {"command": "Get-Content \".agent-policy\\guard.sh\""}, "cwd": R}),
+    # --- issue #28: after a read-only command, x.py / y.sh name a file, not a script being run
+    (0, "read: protected file and a .py test file (PowerShell)", {"tool_name": "PowerShell", "tool_input": {"command": "Get-Content -LiteralPath '.agent-policy\\guard.py' -TotalCount 95; Get-Content -LiteralPath 'tests\\policy\\test_codex_hook_cmd.py' -TotalCount 70"}, "cwd": R}),
+    (0, "read: cat a git hook and a .sh script", claude_bash("cat .githooks/pre-push scripts/build.sh")),
+    (0, "read: grep in guard.sh and a .py script", claude_bash("grep -n exit .agent-policy/guard.sh scripts/audit_gbfs.py")),
+    # git, rg, less and more can run a script through their options: a .py/.sh word after them
+    # keeps the strict reading, even in a plain read (accepted false positive).
+    (2, "limit: git diff of guard.py and a test .py stays blocked", claude_bash("git diff main -- .agent-policy/guard.py tests/policy/test_guard.py")),
+    (2, "run via git -c core.pager", claude_bash("git -c core.pager=./x.sh log .githooks/pre-push")),
+    (2, "run via git -c diff.external", claude_bash("git -c diff.external=./x.sh diff .githooks/pre-push")),
+    (2, "run via git difftool --extcmd", claude_bash("git difftool --extcmd=./x.sh .githooks/pre-push")),
+    (2, "run via git grep -O", claude_bash("git grep -O./x.sh hook .githooks/pre-push")),
+    (2, "run via git alias", claude_bash("git -c alias.z=!./x.sh z .githooks/pre-push")),
+    (2, "run via rg --pre", claude_bash("rg --pre ./x.sh hook .githooks/pre-push")),
+    (2, "run via rg --pre=", claude_bash("rg --pre=./x.py hook .agent-policy/guard.py")),
+    # Codex review of #28: substitutions and quoted separators hide a script run inside a read
+    (2, "run via $(...) inside cat", claude_bash("cat $(./tools/fix.sh .codex/config.toml)")),
+    (2, "run via backticks inside cat", claude_bash("cat `./tools/fix.sh .codex/config.toml`")),
+    (2, "run via a quoted ; that fakes a cat segment", claude_bash("env 'X=;cat ' ./tools/fix.sh .codex/config.toml")),
+    (2, "run via an escaped quote and a quoted ;", claude_bash("env \"X=\\\";cat \" ./tools/fix.sh .codex/config.toml")),
+    (2, "run after an escaped ;", claude_bash("cat x \\; ./tools/fix.sh .codex/config.toml")),
+    (2, "unclosed quote: strict reading", claude_bash("cat 'unclosed ./tools/fix.sh .codex/config.toml")),
+    (2, "run after && following a read", claude_bash("cat .githooks/pre-push && ./tools/fix.sh .codex/config.toml")),
+    # Codex recheck of #28: PowerShell evaluates (...) in arguments and runs a piped { } block
+    (2, "PowerShell: (...) argument runs a script", {"tool_name": "PowerShell", "tool_input": {"command": "Get-Content scripts/build.sh -Filter (./tools/fix.ps1 .codex/config.toml)"}, "cwd": R}),
+    (2, "PowerShell: piped script block runs a script", {"tool_name": "PowerShell", "tool_input": {"command": "ls | Get-Content -Path { ./tools/fix.sh .codex/config.toml }"}, "cwd": R}),
+    (0, "read: double-quoted protected path and .sh file", claude_bash("cat \".githooks/pre-push\" \"scripts/build.sh\"")),
+    (0, "read: cat.exe is cat", claude_bash("cat.exe .githooks/pre-push scripts/build.sh")),
+    (2, "write: uv run of a .py on a protected path", claude_bash("uv run tools/fix.py .githooks/pre-push")),
+    (2, "write: source a .sh next to a protected path", claude_bash("source tools/x.sh .claude/settings.json")),
+    (2, "write: read, then run a .py script (chained)", claude_bash("cat README.md; tools/fix.py .githooks/pre-push")),
+    (2, "write: env runs a .sh on .codex", claude_bash("env A=1 tools/x.sh .codex/config.toml")),
     # --- remote branch deletion through an empty source refspec
     (2, "push: empty source refspec deletes a branch", claude_bash("git push origin :old-branch")),
     (2, "push: quoted empty source refspec", {"tool_name": "PowerShell", "tool_input": {"command": "git push origin ':old-branch'"}, "cwd": R}),
