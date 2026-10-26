@@ -3,8 +3,11 @@
 Run from the repository root: python tests/policy/test_guard.py [path/to/guard.py]
 Default: the committed guard. Covers both agents' hook payloads: Claude Code (Write/Edit/Bash)
 and Codex (apply_patch/Bash). The paths in the cases are Windows paths, as on the agents' machine.
+On other systems (CI runs Linux) the cases in WINDOWS_ONLY are reported as skipped, with the
+reason; every other case runs everywhere.
 """
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -62,6 +65,7 @@ CASES = [
     (2, "claude: .git/config", claude_file(R + r"\.git\config")),
     (2, "claude: .git file (worktree)", claude_file(R + r"\.git")),
     (2, "claude: outside repo", claude_file(r"C:\Users\someone\Desktop\x.txt")),
+    (2, "claude: outside repo, POSIX absolute path", claude_file("/home/someone/Desktop/x.txt")),
     (2, "claude: dot-dot escape", claude_file(R + r"\..\..\outside.txt")),
     (2, "claude: prefix trick repo_evil", claude_file(R + r"_evil\x.txt")),
     (2, "claude: other project .claude/settings in extra root", claude_file(str(OTHER / ".claude" / "settings.json"))),
@@ -181,9 +185,17 @@ CASES = [
     (2, "malformed JSON fails closed", "not json"),
 ]
 
-failures = 0
+# A drive-letter path is absolute only on Windows; elsewhere it is a relative file name inside
+# the repository, which the guard rightly allows. The POSIX case above covers "outside repo" there.
+WINDOWS_ONLY = {"claude: outside repo": "C:\\ path is a relative file name off Windows"}
+
+failures = skipped = 0
 try:
     for want, label, payload in CASES:
+        if os.name != "nt" and label in WINDOWS_ONLY:
+            skipped += 1
+            print(f"SKIP want={want}  {label}  ({WINDOWS_ONLY[label]})")
+            continue
         data = payload if isinstance(payload, str) else json.dumps(payload)
         proc = subprocess.run([sys.executable, "-I", str(GUARD)], input=data, text=True, capture_output=True)
         ok = proc.returncode == want
@@ -192,5 +204,6 @@ try:
         print(f"{'OK  ' if ok else 'FAIL'} want={want} got={proc.returncode}  {label}{extra}")
 finally:
     shutil.rmtree(BOX, ignore_errors=True)
-print(f"\n{len(CASES) - failures}/{len(CASES)} passed")
+run = len(CASES) - skipped
+print(f"\n{run - failures}/{run} passed" + (f", {skipped} skipped (Windows-only)" if skipped else ""))
 sys.exit(1 if failures else 0)
