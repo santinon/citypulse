@@ -63,6 +63,40 @@ WRITE_HINT = re.compile(
 )
 # A protected path; inside it, a .py or .sh extension (guard.py, guards.sh) is no interpreter.
 PROTECTED_TOKEN = re.compile(r"[\w.:/\\-]*(?:" + PROTECTED_REF.pattern + r")[\w.:/\\-]*", re.I)
+# A .py or .sh extension at the end of a word, before an optional closing quote.
+SCRIPT_EXTENSION = re.compile(r"\.(?:py|sh)(?=[\"']?$)", re.I)
+# Commands that only read their file arguments and can never run another program: after
+# them, x.py or y.sh is a file name, not a script being run. Any other command keeps the strict
+# reading (uv run x.py, source y.sh). Deliberately absent: git (-c core.pager=, difftool
+# --extcmd, grep -O), rg (--pre), less and more (LESSOPEN), whose options can run a program.
+READ_COMMANDS = {
+    "cat", "head", "tail", "type", "get-content", "gc", "grep", "findstr", "select-string",
+    "sls", "diff", "cmp", "wc", "sha256sum", "md5sum", "ls", "dir", "get-childitem", "gci",
+    "stat", "file",
+}
+# Substitution, a PowerShell expression or script block, or an escaped separator: the segment
+# split cannot be trusted there ($(...), backticks, <(...), (...), @(...), { ... }, \;).
+SUBSTITUTION = re.compile(r"[`(){}]|\\[;&|\n]")
+
+
+def unsplittable(command: str) -> bool:
+    """True when a substitution, an escaped separator or a separator inside quotes appears."""
+    if SUBSTITUTION.search(command):
+        return True
+    quote, escaped = None, False
+    for ch in command:
+        if escaped:
+            escaped = False
+        elif ch == "\\" and quote != "'":
+            escaped = True  # backslash escapes the next character, except inside '...'
+        elif quote:
+            if ch == quote:
+                quote = None
+            elif ch in ";&|\n":
+                return True
+        elif ch in "\"'":
+            quote = ch
+    return quote is not None  # an unclosed quote: do not guess
 # Destructive or outward-facing commands, refused wherever they appear in a command.
 FORBIDDEN_COMMANDS = [
     (r"\bgh\s+pr\s+merge\b", "merging is done by a human"),
@@ -129,6 +163,28 @@ def check_path(raw: str, cwd: str) -> None:
         block(f"{raw} is another project's agent or git configuration.")
 
 
+def strip_argument_extensions(command: str) -> str:
+    """In a segment run by a READ_COMMANDS command, drop the .py/.sh extension of its arguments.
+
+    `cat x.py` or `Get-Content 'y.sh'` only name a file (issue #28); `tools/fix.py x`,
+    `uv run x.py` or `source y.sh` run a script and keep the strict reading. A command with a
+    substitution or a quoted separator is returned unchanged (strict reading everywhere).
+    """
+    if unsplittable(command):
+        return command
+    parts = re.split(r"([;&|\n])", command)
+    for p, part in enumerate(parts):
+        words = part.split(" ")
+        head = next((i for i, w in enumerate(words) if w and not re.match(r"[A-Za-z_]\w*=", w)), None)
+        if head is None:
+            continue
+        name = re.split(r"[/\\]", words[head].strip("\"'"))[-1].lower().removesuffix(".exe")
+        if name in READ_COMMANDS:
+            words[head + 1:] = [SCRIPT_EXTENSION.sub("", w) for w in words[head + 1:]]
+            parts[p] = " ".join(words)
+    return "".join(parts)
+
+
 def check_shell(command: str) -> None:
     for pattern, reason in FORBIDDEN_COMMANDS:
         if re.search(pattern, command, re.I):
@@ -148,7 +204,8 @@ def check_shell(command: str) -> None:
     for segment in re.split(r"[;&|\n]", command):
         if re.search(r"core\.hookspath", segment, re.I) and not re.search(r"\bconfig\s+--get\b", segment, re.I):
             block(f"`{segment.strip()[:120]}`: changing core.hooksPath can disable the git hooks.")
-    hints = PROTECTED_TOKEN.sub(lambda m: re.sub(r"\.(?:py|sh)\b", "", m.group(), flags=re.I), command)
+    hints = PROTECTED_TOKEN.sub(lambda m: re.sub(r"\.(?:py|sh)\b", "", m.group(), flags=re.I),
+                                strip_argument_extensions(command))
     if PROTECTED_REF.search(command) and WRITE_HINT.search(hints):
         block(f"`{command[:120]}` may write to protected agent or git configuration.")
 
