@@ -2,6 +2,13 @@
 # Refuse AI attribution trailers in commit messages (see .githooks/guards.sh).
 . "$(git rev-parse --show-toplevel)/.githooks/guards.sh"
 
+# Run first so private message text cannot reach the legacy trailer diagnostic.
+python -I -B "$(git rev-parse --show-toplevel)/.agent-policy/privacy/scan.py" \
+    --message "$1" 2>/dev/null || {
+    echo "commit-msg: privacy check refused; nothing was committed." >&2
+    exit 1
+}
+
 found=$(ai_trailers < "$1")
 if [ -n "$found" ]; then
     echo "commit-msg: refusing AI attribution in the commit message:" >&2

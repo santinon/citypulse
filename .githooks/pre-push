@@ -24,6 +24,14 @@ while read -r local_ref local_sha remote_ref remote_sha; do
         echo "pre-push: could not list the commits being pushed ($range); refusing." >&2
         exit 1
     }
+
+    # Run before any legacy diagnostic could reproduce a filename or message.
+    python -I -B "$(git rev-parse --show-toplevel)/.agent-policy/privacy/scan.py" \
+        --push-tip "$local_sha" --push-base "$remote_sha" 2>/dev/null || {
+        echo "pre-push: privacy check refused; nothing was sent." >&2
+        exit 1
+    }
+
     files=$(tr '\0' '\n' < "$names_file" | sort -u | private_paths)
     # shellcheck disable=SC2086
     trailers=$(git log --format=%B $range | ai_trailers)

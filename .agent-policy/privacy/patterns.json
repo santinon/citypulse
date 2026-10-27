@@ -1,0 +1,34 @@
+[
+  {
+    "id": "email", "regex": "(?<![\\w.+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}(?![\\w.-])",
+    "positive": ["reader","@","example.invalid"], "negative": ["reader at example.invalid"]
+  },
+  {
+    "id": "windows-home", "regex": "(?:[A-Z]:[\\\\/]|/[A-Z]/)Users[\\\\/][^\\s\\\\/<>\"'`*?${}]+",
+    "positive": ["C:/","Users/","fixture/file.txt"], "negative": ["C:/ProgramData/tool"]
+  },
+  {
+    "id": "posix-home", "regex": "(?<![\\w/])/(?:home|Users)/[^\\s/<>\"'`*?${}]+",
+    "positive": ["/home/","fixture/file.txt"], "negative": ["/opt/tool"]
+  },
+  {
+    "id": "private-key", "regex": "-----BEGIN (?:[A-Z0-9]+[ -])*PRIVATE KEY-----",
+    "positive": ["-----BEGIN ","PRIVATE KEY-----"], "negative": ["-----BEGIN PUBLIC KEY-----"]
+  },
+  {
+    "id": "github-token", "regex": "\\b(?:gh[pousr]_[A-Z0-9]{20,}|github_pat_[A-Z0-9_]{20,})\\b",
+    "positive": ["ghp_","AAAAAAAAAAAAAAAAAAAA"], "negative": ["ghp_short"]
+  },
+  {
+    "id": "openai-token", "regex": "\\bsk-(?:(?:proj|svcacct)-)?[A-Z0-9_-]{20,}\\b",
+    "positive": ["sk-","AAAAAAAAAAAAAAAAAAAA"], "negative": ["sk-short"]
+  },
+  {
+    "id": "aws-key", "regex": "\\b(?:AKIA|ASIA)[A-Z0-9]{16}\\b",
+    "positive": ["AKIA","ABCDEFGHIJKLMNOP"], "negative": ["AKIA_short"]
+  },
+  {
+    "id": "slack-token", "regex": "\\bxox[baprs]-[A-Z0-9-]{20,}\\b",
+    "positive": ["xoxb-","1234567890-ABCDEFGHIJ"], "negative": ["xoxb-short"]
+  }
+]

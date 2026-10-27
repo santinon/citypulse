@@ -44,4 +44,25 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - run: python3 tests/policy/run_all.py
+      - name: Scan event commits with public privacy rules
+        env:
+          PRIVACY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          PRIVACY_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -eu
+          case "$PRIVACY_HEAD" in
+            ""|*[!0-9a-f]*) echo "privacy: invalid event head"; exit 2 ;;
+          esac
+          case "$PRIVACY_BASE" in
+            ""|*[!0-9a-f]*) echo "privacy: invalid event base"; exit 2 ;;
+          esac
+          if [[ "$PRIVACY_BASE" =~ ^0+$ ]]; then
+            selection="$PRIVACY_HEAD"
+          else
+            selection="$PRIVACY_BASE..$PRIVACY_HEAD"
+          fi
+          python3 -I -B .agent-policy/privacy/scan.py \
+            --public-only --range "$selection"

@@ -121,9 +121,15 @@ git config core.hooksPath .githooks
 
 The hooks refuse to commit or push private files (internal notes, the local agent log,
 scratch files, machine-local agent settings, `.env` files) and AI attribution trailers in
-commit messages. The rules live in `.githooks/guards.sh`.
+commit messages. The rules live in `.githooks/guards.sh`. They also scan what is committed and
+pushed (added lines, file names, messages) for personal data and credentials, with
+`.agent-policy/privacy/scan.py` (public patterns and exact exceptions in the same folder); CI
+runs the same scan with the public rules only. An optional private list, one literal term per
+line, lives outside every repository: `%LOCALAPPDATA%\AgentPrivacy\private.txt`, or the file
+named by `AGENT_PRIVACY_PRIVATE`.
 
-Agent policy tests (the shared guard, the git hooks, and Codex's hook command and rules).
+Agent policy tests (the shared guard, the git hooks, the privacy scanner, and Codex's hook
+command and rules).
 Run them from the repository root, in Git Bash on Windows. They work on temporary copies and
 never change the real agent settings; the Codex parts report SKIP without Windows or without
 the Codex CLI of the VS Code extension:

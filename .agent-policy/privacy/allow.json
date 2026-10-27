@@ -1,0 +1,37 @@
+[
+  {
+    "rule": "email", "text": "info@bixi.com",
+    "paths": ["sample-data/gbfs/20261025T001551Z/en/system_information.json",".agent-policy/privacy/allow.json"],
+    "why": "Organisational contact in the committed BIXI source snapshot."
+  },
+  {
+    "rule": "email", "text": "policy-test@example.invalid",
+    "paths": ["tests/policy/test_githooks.sh",".agent-policy/privacy/allow.json"],
+    "why": "Synthetic git identity used only by disposable hook tests."
+  },
+  {
+    "rule": "email", "text": "noreply@anthropic.com",
+    "paths": ["tests/policy/test_githooks.sh","@commit-message",".agent-policy/privacy/allow.json"],
+    "why": "Public robot address in fixtures testing the existing AI-trailer prohibition."
+  },
+  {
+    "rule": "email", "text": "codex@openai.com",
+    "paths": ["tests/policy/test_githooks.sh","@commit-message",".agent-policy/privacy/allow.json"],
+    "why": "Public robot address in fixtures testing the existing AI-trailer prohibition."
+  },
+  {
+    "rule": "email", "text": "claude.dupont@example.org",
+    "paths": ["tests/policy/test_githooks.sh","@commit-message",".agent-policy/privacy/allow.json"],
+    "why": "Synthetic human coauthor fixture; privacy must preserve the legacy trailer control."
+  },
+  {
+    "rule": "windows-home", "text": "C:\\Users\\someone",
+    "paths": ["tests/policy/test_guard.py","@commit-message",".agent-policy/privacy/allow.json"],
+    "why": "Synthetic outside-root path in guard tests and an existing explanatory commit message."
+  },
+  {
+    "rule": "posix-home", "text": "/home/someone",
+    "paths": ["tests/policy/test_guard.py",".agent-policy/privacy/allow.json"],
+    "why": "Synthetic outside-root path used by the cross-platform guard test."
+  }
+]

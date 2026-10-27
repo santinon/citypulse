@@ -2,6 +2,13 @@
 # Refuse to commit private files (see .githooks/guards.sh).
 . "$(git rev-parse --show-toplevel)/.githooks/guards.sh"
 
+# Run first so a private filename cannot reach the legacy path diagnostic.
+python -I -B "$(git rev-parse --show-toplevel)/.agent-policy/privacy/scan.py" \
+    --staged 2>/dev/null || {
+    echo "pre-commit: privacy check refused; nothing was committed." >&2
+    exit 1
+}
+
 # -z keeps git from quoting non-ASCII names; --diff-filter=d lets a private file
 # be removed from tracking while still refusing to add or modify one.
 found=$(git diff --cached --name-only -z --diff-filter=d | tr '\0' '\n' | private_paths)
