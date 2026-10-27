@@ -17,6 +17,7 @@ TESTS = [
     ("guard", [sys.executable, "-I", str(HERE / "test_guard.py")]),
     ("guard.sh wrapper", [sys.executable, "-I", str(HERE / "test_guard_sh.py")]),
     ("git hooks", ["sh", str(HERE / "test_githooks.sh")]),
+    ("privacy", [sys.executable, "-I", "-B", str(HERE / "test_privacy.py")]),
     ("Codex hook command", [sys.executable, "-I", str(HERE / "test_codex_hook_cmd.py")]),
     ("Codex rules", [sys.executable, "-I", str(HERE / "test_codex_rules.py")]),
 ]

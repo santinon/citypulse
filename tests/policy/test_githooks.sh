@@ -25,14 +25,23 @@ result() {  # exit_code stderr_file
 
 root=$(git rev-parse --show-toplevel) || exit 1
 hooks="${GITHOOKS_DIR:-$root/.githooks}"
+policy="$(dirname "$hooks")/.agent-policy/privacy"
 tmp=$(mktemp -d) || exit 1
 trap 'rm -rf "$tmp"' EXIT
 repo="$tmp/repo"; err="$tmp/stderr.txt"; m="$tmp/msg.txt"
+
 git init -q "$repo" || die "git init"
 mkdir "$repo/.githooks" || die "hooks folder"
 for f in guards.sh commit-msg pre-commit pre-push; do
     cp "$hooks/$f" "$repo/.githooks/$f" || die "copy $f"
 done
+mkdir -p "$repo/.agent-policy/privacy" || die "privacy folder"
+for f in scan.py patterns.json allow.json; do
+    cp "$policy/$f" "$repo/.agent-policy/privacy/$f" || die "copy privacy $f"
+done
+AGENT_PRIVACY_PRIVATE="$tmp/private.txt"
+export AGENT_PRIVACY_PRIVATE
+printf '%s\n' 'legacy-privacy-fixture-sentinel' > "$AGENT_PRIVACY_PRIVATE" || die "private policy"
 cd "$repo" || die "cd into the temporary repository"
 GIT_AUTHOR_NAME=policy-test; GIT_AUTHOR_EMAIL=policy-test@example.invalid
 GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME; GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
