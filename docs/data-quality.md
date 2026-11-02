@@ -191,7 +191,7 @@ Now: nothing (no observation store yet). Later: #5, #6.
 
 **DQ-12 Alerts.** The alert `type` drives no logic: `SYSTEM_CLOSURE` is used for messages that
 are not closures. Alerts are shown as text with their `times`. Now: alert counts, types and
-summaries. Later: #4, #15.
+summaries. Later: #15.
 
 **DQ-13 Raw first.** Every fetched body is kept with its SHA-256 and `collected_at` before any
 normalisation; unknown fields are kept. Now: manifest and SHA checks. Later: #6.
