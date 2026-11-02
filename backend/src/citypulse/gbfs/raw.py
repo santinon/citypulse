@@ -90,10 +90,10 @@ def _no_constant(name: str) -> NoReturn:
     raise ValueError(f"non-finite number {name}")
 
 
-def parse_station_feed(payload: RawPayload) -> RawStationFeed:
-    """Parse a station feed body, strictly. Nothing is parsed before the capture exists."""
+def parse_json(payload: RawPayload) -> JsonValue:
+    """Parse a body as strict JSON. Nothing is parsed before the capture exists."""
     try:
-        document = json.loads(
+        return json.loads(
             payload.body.decode("utf-8"),
             object_pairs_hook=_unique_keys,
             parse_constant=_no_constant,
@@ -105,6 +105,11 @@ def parse_station_feed(payload: RawPayload) -> RawStationFeed:
             url=payload.final_url,
             captures=(payload,),
         ) from error
+
+
+def parse_station_feed(payload: RawPayload) -> RawStationFeed:
+    """Parse a station feed body: strict JSON, then a strict envelope."""
+    document = parse_json(payload)
     try:
         return RawStationFeed.model_validate(document)
     except (ValidationError, RecursionError) as error:
