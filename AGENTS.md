@@ -167,6 +167,24 @@ come from environment variables or a local `.env`, documented in `backend/.env.e
 uv run uvicorn citypulse.main:create_app --factory
 ```
 
+Database (issue #5). A human starts Docker Desktop. Copy `infra/.env.example` to `infra/.env` and
+set a password, then from the repository root:
+
+```sh
+docker compose -f infra/compose.yaml up -d db
+```
+
+From `backend/`, with `DATABASE_URL` or `TEST_DATABASE_URL` set to
+`postgresql+psycopg://citypulse:PASSWORD@127.0.0.1:5432/<db>`:
+
+```sh
+uv run alembic upgrade head
+uv run pytest tests/db
+```
+
+Database tests skip without `TEST_DATABASE_URL`, and need a dedicated empty database. CI sets
+`REQUIRE_DB=1`, so a missing database fails there.
+
 ## Data contract (non-negotiable)
 
 - **Missing is not zero.** A station without a valid status has `null` availability, never `0`.

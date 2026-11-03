@@ -12,18 +12,26 @@ OTHER_URL = "https://example.org/gbfs/gbfs.json"
 # conftest.py clears the settings variables and runs each test in an empty temporary folder.
 
 
+@pytest.fixture(autouse=True)
+def clear_retention_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("RAW_PAYLOAD_RETENTION_DAYS", raising=False)
+
+
 def test_defaults() -> None:
     settings = Settings()
     assert str(settings.gbfs_discovery_url) == OFFICIAL_GBFS_DISCOVERY_URL
     assert settings.database_url is None
+    assert settings.raw_payload_retention_days is None
 
 
 def test_environment_variables_override_the_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GBFS_DISCOVERY_URL", OTHER_URL)
     monkeypatch.setenv("DATABASE_URL", "postgresql://user@localhost/citypulse")
+    monkeypatch.setenv("RAW_PAYLOAD_RETENTION_DAYS", "30")
     settings = Settings()
     assert str(settings.gbfs_discovery_url) == OTHER_URL
     assert settings.database_url == "postgresql://user@localhost/citypulse"
+    assert settings.raw_payload_retention_days == 30
 
 
 def test_env_file_in_working_directory_is_read(tmp_path: Path) -> None:
@@ -44,6 +52,23 @@ def test_copied_env_example_keeps_the_defaults(tmp_path: Path) -> None:
     settings = Settings()
     assert str(settings.gbfs_discovery_url) == OFFICIAL_GBFS_DISCOVERY_URL
     assert settings.database_url is None
+    assert settings.raw_payload_retention_days is None
+
+
+def test_empty_retention_means_no_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAW_PAYLOAD_RETENTION_DAYS", "")
+    assert Settings().raw_payload_retention_days is None
+
+
+@pytest.mark.parametrize("value", ["0", "-1"])
+def test_nonpositive_retention_is_rejected(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    monkeypatch.setenv("RAW_PAYLOAD_RETENTION_DAYS", value)
+    with pytest.raises(ValidationError) as error:
+        Settings()
+    assert any(
+        detail["loc"] == ("raw_payload_retention_days",) and detail["type"] == "greater_than"
+        for detail in error.value.errors()
+    )
 
 
 @pytest.mark.parametrize("value", ["not a url", "ftp://example.org/gbfs.json"])
