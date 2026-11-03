@@ -1,6 +1,6 @@
 """Runtime configuration, read from environment variables and an optional local `.env` file."""
 
-from pydantic import HttpUrl
+from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Official root discovery file, listed in the Montréal open-data catalogue (docs/sources.yml).
@@ -18,4 +18,5 @@ class Settings(BaseSettings):
     )
 
     gbfs_discovery_url: HttpUrl = HttpUrl(OFFICIAL_GBFS_DISCOVERY_URL)
-    database_url: str | None = None  # unused until the database exists (issue #5)
+    database_url: str | None = None
+    raw_payload_retention_days: int | None = Field(default=None, gt=0)

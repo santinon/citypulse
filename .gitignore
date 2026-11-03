@@ -12,6 +12,7 @@ docs/internal/
 .env
 .env.*
 !.env.example
+infra/.env
 
 # Python
 __pycache__/
